@@ -1,0 +1,664 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Mahabharata Battle Quiz</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;900&family=Marcellus+SC&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Marcellus SC', serif;
+      text-align: center;
+      background: url('images/kurukshetra.png') no-repeat center center fixed;
+      background-size: cover;
+      color: white;
+      margin: 0;
+      padding: 20px;
+      min-height: 100vh;
+      position: relative;
+      overflow-x: hidden;
+    }
+
+    /* Overlay for better text readability */
+    body::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.6);
+      z-index: -1;
+    }
+
+    h1, h2, h3, .quiz-title {
+      font-family: 'Cinzel', serif;
+      font-weight: 900;
+      letter-spacing: 2px;
+      text-shadow: 0 0 10px gold, 0 0 20px black;
+    }
+
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+
+    .score-display {
+      background: rgba(0,0,0,0.6);
+      padding: 10px 20px;
+      border-radius: 10px;
+      border: 2px solid gold;
+      font-size: 1.2em;
+    }
+
+    .battlefield {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin: 20px;
+      position: relative;
+    }
+
+    .fighter {
+      width: 120px;
+      text-align: center;
+      margin-top: 60px;
+      position: relative;
+      transition: transform 0.3s;
+    }
+    .fighter img {
+      width: 100%;
+      border-radius: 10px;
+      box-shadow: 0 0 15px black;
+      border: 3px solid transparent;
+    }
+    
+    #pandava img {
+      border-color: #0f9d58;
+    }
+    
+    #kaurava img {
+      border-color: #8b0000;
+    }
+
+    .health-container {
+      position: relative;
+      flex: 1;
+      margin: 0 20px;
+    }
+
+    .health-bar {
+      height: 30px;
+      background: linear-gradient(145deg, #d4af37, #ffd700, #b8860b);
+      border: 3px solid #8b7500;
+      border-radius: 15px;
+      overflow: hidden;
+      box-shadow: 0 0 20px rgba(0,0,0,0.8), inset 0 0 10px #fff3b0;
+      position: relative;
+    }
+
+    .health {
+      height: 100%;
+      transition: width 0.5s ease-in-out;
+    }
+
+    #pandavaHealth {
+      background: linear-gradient(to right, #0f9d58, #34eb8f, #0b6623);
+      width: 100%;
+    }
+    #kauravaHealth {
+      background: linear-gradient(to right, #8b0000, #e63946, #a4161a);
+      width: 100%;
+    }
+    
+    .health-text {
+      position: absolute;
+      top: 0;
+      width: 100%;
+      text-align: center;
+      line-height: 30px;
+      font-weight: bold;
+      text-shadow: 1px 1px 2px black;
+    }
+
+    /* quiz box */
+    .quiz-container {
+      perspective: 1000px;
+      margin: 30px auto;
+      max-width: 600px;
+    }
+
+    .quiz-box {
+      background: rgba(0,0,0,0.8);
+      padding: 25px;
+      border-radius: 15px;
+      border: 3px solid gold;
+      box-shadow: 0 0 25px rgba(255, 215, 0, 0.5);
+      transform-style: preserve-3d;
+      transition: transform 0.5s;
+    }
+
+    .question-number {
+      font-size: 0.9em;
+      color: gold;
+      margin-bottom: 5px;
+    }
+
+    .options {
+      margin-top: 20px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 15px;
+    }
+
+    button {
+      margin: 8px;
+      padding: 12px 25px;
+      border: none;
+      border-radius: 8px;
+      background: linear-gradient(to bottom, gold, #b8860b);
+      color: #2c0b00;
+      font-weight: bold;
+      font-family: 'Marcellus SC', serif;
+      cursor: pointer;
+      text-shadow: 0 0 2px rgba(255,255,255,0.5);
+      box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+      transition: all 0.2s;
+      transform: translateZ(0);
+    }
+    button:hover {
+      background: linear-gradient(to bottom, #ffd700, #daa520);
+      transform: translateY(-2px);
+      box-shadow: 0 6px 12px rgba(0,0,0,0.4);
+    }
+    button:active {
+      transform: translateY(1px);
+    }
+    button:disabled {
+      opacity: 0.7;
+      cursor: not-allowed;
+      transform: none;
+    }
+    
+    .option-correct {
+      background: linear-gradient(to bottom, #0f9d58, #0b6623) !important;
+      color: white;
+    }
+    
+    .option-incorrect {
+      background: linear-gradient(to bottom, #8b0000, #600000) !important;
+      color: white;
+    }
+
+    .action-buttons {
+      margin-top: 25px;
+    }
+
+    /* Special abilities */
+    .abilities {
+      display: flex;
+      justify-content: center;
+      gap: 20px;
+      margin: 20px 0;
+    }
+    
+    .ability-btn {
+      padding: 8px 15px;
+      font-size: 0.9em;
+      background: linear-gradient(to bottom, #8b7500, #5c4a00);
+      color: gold;
+      border: 1px solid gold;
+      border-radius: 20px;
+      cursor: pointer;
+      opacity: 0.8;
+      transition: all 0.3s;
+    }
+    
+    .ability-btn:hover {
+      opacity: 1;
+      transform: scale(1.05);
+    }
+    
+    .ability-btn:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    /* result screen */
+    #result {
+      font-size: 2.5em;
+      font-weight: bold;
+      margin: 30px 0;
+      text-shadow: 0 0 20px gold, 0 0 40px black;
+      padding: 20px;
+      border-radius: 15px;
+      background: rgba(0,0,0,0.7);
+      display: inline-block;
+    }
+
+    /* Damage numbers */
+    .damage {
+      position: absolute;
+      font-weight: bold;
+      font-size: 1.5em;
+      pointer-events: none;
+      z-index: 10;
+    }
+    
+    .pandava-damage {
+      color: #e63946;
+      text-shadow: 0 0 5px #8b0000;
+    }
+    
+    .kaurava-damage {
+      color: #34eb8f;
+      text-shadow: 0 0 5px #0b6623;
+    }
+
+    /* Battle effects */
+    .battle-effect {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      top: 0;
+      left: 0;
+      pointer-events: none;
+      z-index: 5;
+      opacity: 0;
+    }
+
+    /* Timer */
+    .timer-container {
+      height: 5px;
+      background: #333;
+      border-radius: 3px;
+      margin: 15px 0;
+      overflow: hidden;
+    }
+    
+    .timer-bar {
+      height: 100%;
+      background: linear-gradient(to right, gold, orange);
+      width: 100%;
+    }
+
+    /* Animations */
+    @keyframes shake {
+      0% { transform: translate(0,0); }
+      25% { transform: translate(-5px,0); }
+      50% { transform: translate(5px,0); }
+      75% { transform: translate(-5px,0); }
+      100% { transform: translate(0,0); }
+    }
+    .hit {
+      animation: shake 0.3s;
+    }
+
+    @keyframes glow {
+      from { text-shadow: 0 0 10px gold; }
+      to { text-shadow: 0 0 30px orange, 0 0 40px orange; }
+    }
+    .glow {
+      animation: glow 1.5s infinite alternate;
+    }
+    
+    @keyframes float-up {
+      0% { transform: translateY(0); opacity: 1; }
+      100% { transform: translateY(-50px); opacity: 0; }
+    }
+    
+    @keyframes flash {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
+    }
+    
+    @keyframes ability-active {
+      0%, 100% { box-shadow: 0 0 10px gold; }
+      50% { box-shadow: 0 0 20px gold, 0 0 30px orange; }
+    }
+    
+    .ability-active {
+      animation: ability-active 1s infinite;
+    }
+    
+    @keyframes timer-warning {
+      0%, 100% { background: linear-gradient(to right, gold, orange); }
+      50% { background: linear-gradient(to right, #ff4500, #ff0000); }
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <div class="score-display">Pandavas: <span id="pandavaScore">0</span></div>
+    <h1>⚔️ Mahabharata Battle Quiz ⚔️</h1>
+    <div class="score-display">Kauravas: <span id="kauravaScore">0</span></div>
+  </div>
+
+  <div class="abilities">
+    <button id="pandavaAbility" class="ability-btn" onclick="useAbility('pandava')">Pandava Special: Divine Protection (1/1)</button>
+    <button id="kauravaAbility" class="ability-btn" onclick="useAbility('kaurava')">Kaurava Special: Deception (1/1)</button>
+  </div>
+
+  <div class="battlefield">
+    <!-- Pandavas side -->
+    <div class="fighter" id="pandava">
+      <img src="images/arjuna.png" alt="Arjuna">
+      <h3>Pandavas</h3>
+    </div>
+
+    <!-- Health bars -->
+    <div class="health-container">
+      <div class="health-bar">
+        <div id="pandavaHealth" class="health"></div>
+      </div>
+      <div class="health-text"><span id="pandavaHP">100</span>/100</div>
+    </div>
+    
+    <div class="health-container">
+      <div class="health-bar">
+        <div id="kauravaHealth" class="health"></div>
+      </div>
+      <div class="health-text"><span id="kauravaHP">100</span>/100</div>
+    </div>
+
+    <!-- Kauravas side -->
+    <div class="fighter" id="kaurava">
+      <img src="images/duryodhna.png" alt="Duryodhana">
+      <h3>Kauravas</h3>
+    </div>
+    
+    <!-- Battle effects layer -->
+    <div class="battle-effect" id="battleEffect"></div>
+  </div>
+
+  <div class="quiz-container">
+    <div class="quiz-box" id="quizBox">
+      <div class="question-number">Question <span id="currentQ">1</span>/<span id="totalQ">4</span></div>
+      <h2 id="question">Loading question...</h2>
+      
+      <div class="timer-container">
+        <div id="timerBar" class="timer-bar"></div>
+      </div>
+      
+      <div id="options" class="options"></div>
+      
+      <div class="action-buttons">
+        <button id="nextBtn" onclick="nextQuestion()" style="display:none;">Next Question →</button>
+        <button id="skipBtn" onclick="skipQuestion()" style="display:none;">Skip Question</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="result"></div>
+  <button id="replayBtn" onclick="restartGame()" style="display:none;">🔄 Play Again</button>
+
+  <script>
+    const questions = [
+      { q: "Who was Arjuna's son with Subhadra?", options: ["Abhimanyu", "Karna", "Bhishma", "Nakula"], answer: 0, fact: "Abhimanyu was the son of Arjuna and Subhadra, and he learned how to enter the Chakravyuh while still in his mother's womb." },
+      { q: "Who was the eldest Pandava?", options: ["Arjuna", "Yudhishthira", "Bhima", "Sahadeva"], answer: 1, fact: "Yudhishthira was not only the eldest Pandava but also known for his unwavering dedication to dharma (righteousness)." },
+      { q: "Who gave the Bhagavad Gita teachings?", options: ["Bhishma", "Drona", "Krishna", "Vidura"], answer: 2, fact: "Lord Krishna imparted the teachings of the Bhagavad Gita to Arjuna on the battlefield of Kurukshetra." },
+      { q: "Who was Duryodhana's closest ally?", options: ["Ashwatthama", "Karna", "Shalya", "Shakuni"], answer: 3, fact: "Shakuni, Duryodhana's uncle, was known for his cunning mind and played a key role in orchestrating the Kurukshetra war." },
+      { q: "Which weapon did Arjuna use to kill Karna?", options: ["Brahmastra", "Anjalikastra", "Nagastra", "Pashupatastra"], answer: 1, fact: "Arjuna used the Anjalikastra to kill Karna when he was vulnerable, trying to lift his chariot wheel from the mud." },
+      { q: "Who was the teacher of both Pandavas and Kauravas?", options: ["Drona", "Bhishma", "Kripacharya", "Parashurama"], answer: 0, fact: "Dronacharya was the guru who taught martial skills to both the Pandava and Kaurava princes." },
+      { q: "Which Pandava was known for his strength?", options: ["Arjuna", "Nakula", "Bhima", "Yudhishthira"], answer: 2, fact: "Bhima was renowned for his immense physical strength and expertise with the mace." },
+      { q: "Who was the divine father of the Pandavas?", options: ["Indra", "Yama", "Vayu", "All of these"], answer: 3, fact: "Each Pandava had a divine father: Yudhishthira (Yama), Bhima (Vayu), Arjuna (Indra), and Nakula & Sahadeva (Ashwini Kumaras)." }
+    ];
+
+    let currentQ = 0;
+    let pandavaHP = 100;
+    let kauravaHP = 100;
+    let pandavaScore = 0;
+    let kauravaScore = 0;
+    let shuffled = [];
+    let timer;
+    let timeLeft = 15;
+    let pandavaAbilityUsed = false;
+    let kauravaAbilityUsed = false;
+    let correctStreak = 0;
+
+    function shuffleQuestions() {
+      shuffled = [...questions].sort(() => Math.random() - 0.5);
+    }
+
+    function loadQuestion() {
+      document.getElementById("currentQ").innerText = currentQ + 1;
+      document.getElementById("totalQ").innerText = shuffled.length;
+      document.getElementById("question").innerText = shuffled[currentQ].q;
+      const opts = document.getElementById("options");
+      opts.innerHTML = "";
+      
+      // Create option buttons
+      shuffled[currentQ].options.forEach((opt, i) => {
+        const btn = document.createElement("button");
+        btn.innerText = opt;
+        btn.onclick = () => checkAnswer(i);
+        opts.appendChild(btn);
+      });
+      
+      document.getElementById("nextBtn").style.display = "none";
+      document.getElementById("skipBtn").style.display = "none";
+      
+      // Start timer
+      startTimer();
+    }
+
+    function startTimer() {
+      clearInterval(timer);
+      timeLeft = 15;
+      document.getElementById("timerBar").style.width = "100%";
+      document.getElementById("timerBar").style.animation = "";
+      
+      timer = setInterval(() => {
+        timeLeft--;
+        document.getElementById("timerBar").style.width = (timeLeft/15 * 100) + "%";
+        
+        // Change color when time is running out
+        if (timeLeft <= 5) {
+          document.getElementById("timerBar").style.animation = "timer-warning 1s infinite";
+        }
+        
+        if (timeLeft <= 0) {
+          clearInterval(timer);
+          timeUp();
+        }
+      }, 1000);
+    }
+
+    function timeUp() {
+      clearInterval(timer);
+      showDamage(-20, "pandava", "Time Up!");
+      pandavaHP -= 20;
+      if (pandavaHP < 0) pandavaHP = 0;
+      updateHealthBars();
+      document.getElementById("nextBtn").style.display = "inline-block";
+      Array.from(document.getElementById("options").children).forEach(b => b.disabled = true);
+      checkGameOver();
+    }
+
+    function checkAnswer(selected) {
+      clearInterval(timer);
+      const options = document.getElementById("options").children;
+      const correctIndex = shuffled[currentQ].answer;
+      
+      // Disable all buttons
+      Array.from(options).forEach(b => b.disabled = true);
+      
+      // Show correct/incorrect styling
+      if (selected === correctIndex) {
+        options[selected].classList.add("option-correct");
+        correctStreak++;
+        
+        // More damage for streak
+        const damage = 25 + (correctStreak > 1 ? 5 * (correctStreak - 1) : 0);
+        showDamage(damage, "kaurava", damage + " Damage!");
+        kauravaHP -= damage;
+        if (kauravaHP < 0) kauravaHP = 0;
+        
+        // Show fact for correct answer
+        setTimeout(() => {
+          alert("Fact: " + shuffled[currentQ].fact);
+          document.getElementById("nextBtn").style.display = "inline-block";
+        }, 1000);
+      } else {
+        options[selected].classList.add("option-incorrect");
+        options[correctIndex].classList.add("option-correct");
+        correctStreak = 0;
+        
+        showDamage(-30, "pandava", "30 Damage!");
+        pandavaHP -= 30;
+        if (pandavaHP < 0) pandavaHP = 0;
+        
+        document.getElementById("nextBtn").style.display = "inline-block";
+      }
+      
+      // Show skip button after answering
+      if (currentQ < shuffled.length - 1) {
+        document.getElementById("skipBtn").style.display = "inline-block";
+      }
+      
+      updateHealthBars();
+      checkGameOver();
+    }
+
+    function showDamage(amount, target, text) {
+      const damageElement = document.createElement("div");
+      damageElement.className = `damage ${target}-damage`;
+      damageElement.innerText = text;
+      damageElement.style.left = target === "pandava" ? "30%" : "70%";
+      damageElement.style.top = "50%";
+      
+      document.querySelector(".battlefield").appendChild(damageElement);
+      
+      // Animate damage number
+      damageElement.style.animation = "float-up 1.5s forwards";
+      
+      // Remove element after animation
+      setTimeout(() => {
+        damageElement.remove();
+      }, 1500);
+      
+      // Shake effect
+      document.getElementById(target).classList.add("hit");
+      setTimeout(() => {
+        document.getElementById(target).classList.remove("hit");
+      }, 300);
+      
+      // Visual effect
+      if (target === "pandava") {
+        document.getElementById("battleEffect").style.background = "radial-gradient(circle, rgba(139,0,0,0.4) 0%, transparent 70%)";
+      } else {
+        document.getElementById("battleEffect").style.background = "radial-gradient(circle, rgba(15,157,88,0.4) 0%, transparent 70%)";
+      }
+      
+      document.getElementById("battleEffect").style.opacity = "1";
+      setTimeout(() => {
+        document.getElementById("battleEffect").style.opacity = "0";
+      }, 300);
+    }
+
+    function updateHealthBars() {
+      document.getElementById("pandavaHealth").style.width = pandavaHP + "%";
+      document.getElementById("kauravaHealth").style.width = kauravaHP + "%";
+      document.getElementById("pandavaHP").innerText = pandavaHP;
+      document.getElementById("kauravaHP").innerText = kauravaHP;
+    }
+
+    function updateScores() {
+      document.getElementById("pandavaScore").innerText = pandavaScore;
+      document.getElementById("kauravaScore").innerText = kauravaScore;
+    }
+
+    function nextQuestion() {
+      currentQ++;
+      if (currentQ < shuffled.length) {
+        loadQuestion();
+      } else {
+        endGame();
+      }
+    }
+    
+    function skipQuestion() {
+      // Skip costs 10 HP
+      showDamage(-10, "pandava", "Skip Penalty!");
+      pandavaHP -= 10;
+      if (pandavaHP < 0) pandavaHP = 0;
+      updateHealthBars();
+      nextQuestion();
+    }
+
+    function useAbility(side) {
+      if (side === "pandava" && !pandavaAbilityUsed) {
+        // Divine Protection - heal 30 HP
+        pandavaHP = Math.min(100, pandavaHP + 30);
+        showDamage(30, "pandava", "Healed!");
+        document.getElementById("pandavaAbility").innerText = "Divine Protection (0/1)";
+        document.getElementById("pandavaAbility").disabled = true;
+        pandavaAbilityUsed = true;
+        updateHealthBars();
+      } else if (side === "kaurava" && !kauravaAbilityUsed) {
+        // Deception - skip question without penalty
+        document.getElementById("kauravaAbility").innerText = "Deception (0/1)";
+        document.getElementById("kauravaAbility").disabled = true;
+        kauravaAbilityUsed = true;
+        nextQuestion();
+      }
+    }
+
+    function checkGameOver() {
+      if (pandavaHP <= 0 || kauravaHP <= 0) {
+        endGame();
+      }
+    }
+
+    function endGame() {
+      clearInterval(timer);
+      document.getElementById("quizBox").style.display = "none";
+      document.getElementById("replayBtn").style.display = "inline-block";
+      
+      if (pandavaHP > kauravaHP) {
+        pandavaScore++;
+        document.getElementById("result").innerText = "🏆 Pandavas Win the Battle!";
+        document.getElementById("result").style.background = "linear-gradient(to right, rgba(15,157,88,0.7), rgba(0,0,0,0.7))";
+      } else {
+        kauravaScore++;
+        document.getElementById("result").innerText = "💀 Kauravas Triumph!";
+        document.getElementById("result").style.background = "linear-gradient(to right, rgba(139,0,0,0.7), rgba(0,0,0,0.7))";
+      }
+      
+      document.getElementById("result").classList.add("glow");
+      updateScores();
+    }
+
+    function restartGame() {
+      pandavaHP = 100;
+      kauravaHP = 100;
+      currentQ = 0;
+      correctStreak = 0;
+      pandavaAbilityUsed = false;
+      kauravaAbilityUsed = false;
+      
+      document.getElementById("result").innerText = "";
+      document.getElementById("quizBox").style.display = "block";
+      document.getElementById("replayBtn").style.display = "none";
+      document.getElementById("result").classList.remove("glow");
+      
+      document.getElementById("pandavaAbility").innerText = "Pandava Special: Divine Protection (1/1)";
+      document.getElementById("pandavaAbility").disabled = false;
+      document.getElementById("kauravaAbility").innerText = "Kaurava Special: Deception (1/1)";
+      document.getElementById("kauravaAbility").disabled = false;
+      
+      shuffleQuestions();
+      updateHealthBars();
+      loadQuestion();
+    }
+
+    // Initialize the game
+    shuffleQuestions();
+    updateHealthBars();
+    updateScores();
+    loadQuestion();
+  </script>
+</body>
+</html>
